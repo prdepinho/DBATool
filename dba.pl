@@ -68,6 +68,166 @@ any_troops('Lit').
 any_troops('camp followers').
 any_troops('city denizens').
 
+garrison(Element) :-
+  any_foot(Element), Element \= 'WWg', Element \= 'CWg'.
+
+double_element('Kn').
+double_element('Cv').
+double_element('Sp').
+double_element('Bd').
+double_element('Bw').
+
+% command
+
+command(1, Element, Remarks) :-
+  any_troops(Element),
+  Remarks = 'in your first bound'.
+
+command(1, Element, Remarks) :-
+  Element = 'SCh',
+  Remarks = 'charging enemy'.
+
+command(2, Element, Remarks) :-
+  Element = 'SCh',
+  Remarks = 'otherwise'.
+
+command(2, Element, Remarks) :-
+  member(Element, ['El', 'Hd', 'WWg', 'CWg', 'Art']),
+  Remarks = 'otherwise'.
+
+command(2, Element, Remarks) :-
+  garrison(Element), not(member(Element, ['SCh', 'El', 'Hd', 'WWg', 'CWg', 'Art'])),
+  Remarks = 'Garrisoning city, fort or camp'.
+
+command(2, 'LH', Remarks) :-
+  Remarks = 'if over 20 BW of General'.
+
+command(2, Element, Remarks) :-
+  any_troops(Element), not(member(Element, ['SCh', 'El', 'Hd', 'WWg', 'CWg', 'Art'])),
+  Remarks = 'if not general and the general is destroyed or is in a BUA, camp, woods, oasis, marsh or gully'.
+
+command(2, Element, Remarks) :-
+  any_troops(Element), not(member(Element, ['SCh', 'El', 'Hd', 'WWg', 'CWg', 'Art', 'LH'])),
+  Remarks = 'if over 4 BW of the general and beyond the crest of any hill, or beyond BUA, camp, woods, oasis or dunes'.
+
+command(2, Element, Remarks) :-
+  any_troops(Element), not(member(Element, ['SCh', 'El', 'Hd', 'WWg', 'CWg', 'Art', 'LH'])),
+  Remarks = 'if over 4 BW of the general and in a difficult hill, woods, oasis or dunes'.
+
+command(2, Element, Remarks) :-
+  any_troops(Element), not(member(Element, ['SCh', 'El', 'Hd', 'WWg', 'CWg', 'Art', 'LH'])),
+  Remarks = 'if over 8 BW of the general otherwise'.
+
+command(1, Element, Remarks) :-
+  any_troops(Element), not(member(Element, ['SCh', 'El', 'Hd', 'WWg', 'CWg', 'Art'])),
+  Remarks = 'otherwise'.
+
+
+may_move(Element, Remarks) :-
+  any_troops(Element), Element \= 'Ps',
+  Remarks = 'a group may move in or through road or bad going only if in column'.
+
+may_move('Ps', Remarks) :-
+  Remarks = 'a group entirely of Ps may move in or though road or bad going'.
+
+
+charge(Element, Remarks) :-
+  member(Element, ['WWg', 'CWg']),
+  Remarks = 'cannot move into contact with enemy, except if it is a mobile tower making contact with an enemy-held city, fort or camp'.
+
+charge(Element, Remarks) :-
+  member(Element, ['CP', 'Lit', 'Art']),
+  Remarks = 'Cannot move into contact with enemy'.
+
+charge(Element, Remarks) :-
+  Element = 'SCh',
+  Remarks = 'cannot move into contact with enemy held city, fort or camp'.
+
+
+
+threat_zone(Element, Remarks) :-
+  member(Element, ['WWg', 'CWg']),
+  Remarks = 'threat zone extends 1 BW from all of its edges'.
+
+threat_zone(Element, Remarks) :-
+  garrison(Element),
+  Remarks = 'if garrisoned, threat zone extends 1 BW any point of the camp, city or fort'.
+
+
+shooting_range(3, Element, Remarks) :-
+  member(Element, ['Bw', 'WWg', 'CWg']),
+  Remarks = 'cannot shoot if moved more than 1 BW this bound'.
+
+shooting_range(5, 'Art', Remarks) :-
+  Remarks = 'cannot shoot if moved, and cannot shoot during enemy bound except if artillery is shooting at them; can choose targets and shoot over Ps'.
+
+
+overlapping(Element, Remarks) :-
+  member(Element, ['Ps', 'SCh']),
+  Remarks = 'cannot be overlapped'.
+
+overlapping(Element, Remarks) :-
+  member(Element, ['LH', 'Cv']),
+  Remarks = 'cannot be overlapped by the table edge'.
+
+
+assault('El', 'can assault a city or fort only at the gates').
+
+recoiling(Element, Remarks) :-
+  any_mounted(Element),
+  Remarks = 'may recoil either 1 BW or its base depth if it is less than 1 BW'.
+
+recoiling(Element, Remarks) :-
+  any_foot(Element),
+  Remarks = 'recoil base depth, or 1/2 BW at most'.
+
+recoiling('El', 'destroy any element not in BUA or camp met while recoiling').
+recoiling('El', 'while recoiling if it meets another elephant, both are destroyed').
+recoiling('El', 'destroyed if recoiled against defenders of a city or fort').
+
+
+push_back(Element, Remarks) :-
+  member(Element, ['El', 'WWg', 'CWg']),
+  Remarks = 'cannot be pushed back to make room for a recoiling element'.
+
+fleeing(Element, Remarks) :-
+  member(Element, ['LH', 'Ps']),
+  Remarks = 'may flee through bad going without stopping, except for marshes if it was not already at least partially in'.
+
+
+pursuing(Element, Remarks) :-
+  Element = 'Kn',
+  Remarks = 'if not 4Kn, pursue 1 BW straight ahead'.
+
+pursuing(Element, Remarks) :-
+  member(Element, ['SCh', 'El', 'Hd']),
+  Remarks = 'pursue 1 BW straight ahead'.
+
+pursuing(Element, Remarks) :-
+  member(Element, ['Pk', 'Bd', 'Wb']),
+  Remarks = 'if against foot except Ps, pursue 1/2 BW straight ahead'.
+
+pursuing(Element, Remarks) :-
+  any_troops(Element),
+  Remarks = 'if defenders of city, fort or camp are destroyed in close combat, move in'.
+
+
+losing_battle(Element, Remarks) :-
+  member(Element, ['SCh', 'Hd', 'camp followers', 'city denizens']),
+  Remarks = 'do not count towards elements lost for losing the battle'.
+
+losing_battle(Element, Remarks) :-
+  double_element(Element),
+  Remarks = 'the first double element lost counts as two for losing the battle'.
+
+losing_battle(Element, Remarks) :-
+  any_troops(Element),
+  Remarks = 'a general lost counts as two elements for losing the battle'.
+
+
+
+
+
 
 % move
 
@@ -260,7 +420,7 @@ rear_support(1, Element, Against, Remarks) :-
 	Remarks = 'in close combat'.
 
 rear_support(1, Element, Against, Remarks) :-
-	member(Element, ['Kn', 'Cv', 'Sp', 'Bd', 'Bw']),
+  double_element(Element),
 	any_foot(Against),
 	Remarks = 'if is double element'.
 
@@ -915,79 +1075,108 @@ outcome('tie', Element, Type, Against, _, Outcome, Remarks) :-
 
 %
 
-print_element(Element) :-
-  findall(_, print_move(Element), _),
-  findall(_, print_combat_factor(Element), _),
-  findall(_, print_tie_outcome(Element), _),
-  findall(_, print_winlose_outcome(Element), _),
-  findall(_, print_double_outcome(Element), _).
-
-
 print_element(Element, Type) :-
+	format('Element: ~w ~w~n', [Element, Type]),
+  findall(_, print_command(Element), _),
   findall(_, print_move(Element, Type), _),
+  findall(_, print_threat_zone(Element, Type), _),
+  findall(_, print_shooting_range(Element, Type), _),
   findall(_, print_combat_factor(Element, Type), _),
+  findall(_, print_overlapping(Element, Type), _),
+  findall(_, print_assault(Element, Type), _),
   findall(_, print_tie_outcome(Element, Type), _),
   findall(_, print_winlose_outcome(Element), _),
-  findall(_, print_double_outcome(Element), _).
+  findall(_, print_double_outcome(Element), _),
+  findall(_, print_outcome_moves(Element), _),
+  findall(_, print_losing_battle(Element), _).
+
+print_command(Element) :-
+  format('- Pips~n'),
+  bagof(Order, command(Pips, Element, Order), Bag),
+  format(' -- ~w ~w~n', [Pips, Bag]).
 
 
-print_move(Element) :-
-	format('Element: ~w~n', [Element]),
-	move(Move, Element, Remarks),
+print_move(Element, Type) :-
+	move(Move, Element, Type, Remarks),
   format('- Move: ~w, ~w~n', [Move, Remarks]).
 
-print_move(Element) :-
+print_move(Element, _) :-
 	format('- Subsequent Moves~n'),
 	subsequent_move(Element, Remarks),
 	format('-- ~w~n', [Remarks]).
 
-print_move(Element) :-
+print_move(Element, _) :-
 	format('- Interpenetration~n'),
 	bagof(Move, bagof(Across, interpenetration(Move, Element, Across), ABag), MBag),
   ( member('recoil', MBag) *-> MStr = 'recoil into'; MStr = 'move or flee through' ),
-  ( str_troops(ABag, STroops) ),
-	format('-- ~w ~w~n', [MStr, STroops]).
+  str_troops(ABag, Str),
+	format('-- ~w ~w~n', [MStr, Str]).
 
-print_combat_factor(Element) :-
+print_move(Element, _) :-
+  may_move(Element, Remarks),
+  format('(~w)~n', [Remarks]).
+
+print_move(Element, _) :-
+  charge(Element, Remarks),
+  format('(~w)~n', [Remarks]).
+
+print_threat_zone(Element, _) :-
+  threat_zone(Element, Remarks),
+  format('(~w)~n', [Remarks]).
+
+print_shooting_range(Element, _) :-
+  shooting_range(Range, Element, Remarks),
+  format('- Shooting Range: ~w - ~w~n', [Range, Remarks]).
+
+print_combat_factor(Element, _) :-
 	format('- Combat Factor~n'),
 	combat_factor(Element, Foot, Mounted, Remarks),
 	format('-- ~w vs. foot, ~w vs. mounted, ~w~n', [Foot, Mounted, Remarks]).
 
-print_combat_factor(Element) :-
+print_combat_factor(Element, _) :-
 	format('- Rear Support~n'),
 	bagof(Against, rear_support(Factor, Element, Against, Remarks), Bag),
   str_troops(Bag, Str),
 	format('-- Gains ~w rear support vs. ~w, ~w~n', [Factor, Str, Remarks]).
 
-print_combat_factor(Element) :-
+print_combat_factor(Element, Type) :-
 	format('- Flank Support~n'),
-	bagof(Support, flank_support(Factor, Element, Support, Remarks), Bag),
+	bagof(Support, flank_support(Factor, Element, Type, Support, Remarks), Bag),
   str_troops(Bag, Str),
 	format('-- Gains ~w flank support from ~w, ~w~n', [Factor, Str, Remarks]).
 
-print_combat_factor(Element) :-
-	bagof(Support, flank_support(Factor, Support, Element, Remarks), Bag),
+print_combat_factor(Element, Type) :-
+	bagof(Support, flank_support(Factor, Support, Type, Element, Remarks), Bag),
   str_troops(Bag, Str),
 	format('-- Gives ~w flank support to ~w, ~w~n', [Factor, Str, Remarks]).
 
-print_combat_factor(Element) :-
+print_combat_factor(Element, _) :-
 	format('- Tactical Factors~n'),
 	tactical_factors(Factor, Element, Remarks),
 	format('-- ~w: ~w~n', [Factor, Remarks]).
 
-print_tie_outcome(Element) :-
+print_overlapping(Element, _) :-
+  overlapping(Element, Remarks),
+  format('(~w)~n', [Remarks]).
+
+print_assault(Element, _) :-
+  assault(Element, Remarks),
+  format('(~w)~n', [Remarks]).
+
+print_tie_outcome(Element, Type) :-
 	format('- Combat Outcome:~n'),
 	format('-- Tie:~n'),
-	setof(Against, outcome('tie', Element, Against, Outcome, Remarks), Set),
+	setof(Against, outcome('tie', Element, Type, Against, _, Outcome, Remarks), Set),
   str_troops(Set, Str),
   str_outcome(1, Outcome, SOutcome),
 	format('---- ~w ~w, ~w~n', [SOutcome, Str, Remarks]).
 
-print_tie_outcome(Element) :-
-	setof(Against, outcome('tie', Against, Element, Outcome, Remarks), Set),
+print_tie_outcome(Element, Type) :-
+	setof(Against, outcome('tie', Against, _, Element, Type, Outcome, Remarks), Set),
   str_troops(Set, Str),
   str_outcome(3, Outcome, SOutcome),
 	( Outcome \= 'no effect' *-> format('---- ~w ~w, ~w~n', [SOutcome, Str, Remarks]) ).
+
 
 print_winlose_outcome(Element) :-
 	format('-- Lose:~n'),
@@ -1017,67 +1206,25 @@ print_double_outcome(Element) :-
   str_outcome(3, Outcome, SOutcome),
 	( Outcome \= 'no effect' *-> format('---- ~w ~w, ~w~n', [SOutcome, Str, Remarks]) ).
 
+print_outcome_moves(Element) :-
+  recoiling(Element, Remarks),
+  format('- Recoiling: ~w~n', [Remarks]).
 
+print_outcome_moves(Element) :-
+  push_back(Element, Remarks),
+  format('- Push Back: ~w~n', [Remarks]).
 
+print_outcome_moves(Element) :-
+  fleeing(Element, Remarks),
+  format('- Fleeing: ~w~n', [Remarks]).
 
-print_move(Element, Type) :-
-	format('Element: ~w~n', [Element]),
-	move(Move, Element, Type, Remarks),
-  format('- Move: ~w, ~w~n', [Move, Remarks]).
+print_outcome_moves(Element) :-
+  pursuing(Element, Remarks),
+  format('- Pursuing: ~w~n', [Remarks]).
 
-print_move(Element, _) :-
-	format('- Subsequent Moves~n'),
-	subsequent_move(Element, Remarks),
-	format('-- ~w~n', [Remarks]).
-
-print_move(Element, _) :-
-	format('- Interpenetration~n'),
-	bagof(Move, bagof(Across, interpenetration(Move, Element, Across), ABag), MBag),
-  ( member('recoil', MBag) *-> MStr = 'recoil into'; MStr = 'move or flee through' ),
-  str_troops(ABag, Str),
-	format('-- ~w ~w~n', [MStr, Str]).
-
-print_combat_factor(Element, _) :-
-	format('- Combat Factor~n'),
-	combat_factor(Element, Foot, Mounted, Remarks),
-	format('-- ~w vs. foot, ~w vs. mounted, ~w~n', [Foot, Mounted, Remarks]).
-
-print_combat_factor(Element, _) :-
-	format('- Rear Support~n'),
-	bagof(Against, rear_support(Factor, Element, Against, Remarks), Bag),
-  str_troops(Bag, Str),
-	format('-- Gains ~w rear support vs. ~w, ~w~n', [Factor, Str, Remarks]).
-
-print_combat_factor(Element, Type) :-
-	format('- Flank Support~n'),
-	bagof(Support, flank_support(Factor, Element, Type, Support, Remarks), Bag),
-  str_troops(Bag, Str),
-	format('-- Gains ~w flank support from ~w, ~w~n', [Factor, Str, Remarks]).
-
-print_combat_factor(Element, Type) :-
-	bagof(Support, flank_support(Factor, Support, Type, Element, Remarks), Bag),
-  str_troops(Bag, Str),
-	format('-- Gives ~w flank support to ~w, ~w~n', [Factor, Str, Remarks]).
-
-print_combat_factor(Element, _) :-
-	format('- Tactical Factors~n'),
-	tactical_factors(Factor, Element, Remarks),
-	format('-- ~w: ~w~n', [Factor, Remarks]).
-
-print_tie_outcome(Element, Type) :-
-	format('- Combat Outcome:~n'),
-	format('-- Tie:~n'),
-	setof(Against, outcome('tie', Element, Type, Against, _, Outcome, Remarks), Set),
-  str_troops(Set, Str),
-  str_outcome(1, Outcome, SOutcome),
-	format('---- ~w ~w, ~w~n', [SOutcome, Str, Remarks]).
-
-print_tie_outcome(Element, Type) :-
-	setof(Against, outcome('tie', Against, _, Element, Type, Outcome, Remarks), Set),
-  str_troops(Set, Str),
-  str_outcome(3, Outcome, SOutcome),
-	( Outcome \= 'no effect' *-> format('---- ~w ~w, ~w~n', [SOutcome, Str, Remarks]) ).
-
+print_losing_battle(Element) :-
+  losing_battle(Element, Remarks),
+  format('(~w)~n', [Remarks]).
 
 %
 
